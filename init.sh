@@ -5,6 +5,7 @@ pip install colorlog
 pip install einops
 pip install lpips
 pip install scikit-video
+cd /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan
 pip install -r requirements.txt
 pip install --upgrade diffusers
 sudo apt update
@@ -19,5 +20,6 @@ cd /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan
 mkdir -p ~/.cache/torch/hub/checkpoints/
 cp ./alexnet-owt-7be5be79.pth ~/.cache/torch/hub/checkpoints/
 cp ./vgg16-397923af.pth ~/.cache/torch/hub/checkpoints/
+echo "all is ok!"
 
 
