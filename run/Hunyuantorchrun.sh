@@ -23,27 +23,23 @@ mkdir -p ~/.cache/torch/hub/checkpoints/
 cp ./alexnet-owt-7be5be79.pth ~/.cache/torch/hub/checkpoints/
 cp ./vgg16-397923af.pth ~/.cache/torch/hub/checkpoints/
 
-# ======================================
-# 2. 配置 wandb（离线模式）
-# ======================================
+
 export WANDB_PROJECT="MZJVAE-TRAIN"
-# ✅ 设置为离线模式（避免网络超时）
 export WANDB_MODE=offline
 
 echo "🚀 开始训练..."
 /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan/TORCHRUN opensora/train/train_causalvae.py \
-    --exp_name Hunyuan-t528-56GPU \
+    --exp_name Hunyuan-t528-64GPU \
     --eval_video_path /mnt/bn/occupancy3d/workspace/mzj/data/opensoraplan/video33/1 \
     --model_name hunyuan \
-    --model_config scripts/causalvae/wfvae_8dim.json \
-    --resolution "(448,448)" \
+    --resolution "(384,384)" \
     --num_frames 9 \
     --batch_size 1 \
     --lr 0.00001 \
     --epochs 10 \
     --disc_start 0 \
-    --save_ckpt_step 4000 \
-    --eval_steps 2000 \
+    --save_ckpt_step 3000 \
+    --eval_steps 1000 \
     --eval_batch_size 1 \
     --eval_num_frames 9 \
     --eval_sample_rate 1 \
@@ -59,4 +55,4 @@ echo "🚀 开始训练..."
     --wavelet_weight 0.1 \
     --eval_num_video_log 4 \
     --pretrained_model_name_or_path /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan/baseline/hunyuan \
-    --mix_precision fp16 \
+    --mix_precision fp32 \

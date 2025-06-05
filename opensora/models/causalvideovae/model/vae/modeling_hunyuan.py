@@ -11,8 +11,8 @@ from ..registry import ModelRegistry
 # 定义适配器类
 @ModelRegistry.register("hunyuan")
 class WrappedHunyuan(AutoencoderKLHunyuanVideo):
-    def __init__(self, *args, **kwargs): # 透传参数，分别接受位置参数和关键字参数
-        super().__init__(*args, **kwargs)
+#     def __init__(self, *args, **kwargs): # 透传参数，分别接受位置参数和关键字参数，不能用！！！！！！！
+#         super().__init__(*args, **kwargs)
 
     def get_encoder(self):
         modules = [self.encoder]

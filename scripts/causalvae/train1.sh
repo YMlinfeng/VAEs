@@ -7,17 +7,17 @@ export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 torchrun \
     --nnodes=2 --nproc_per_node=8 \
     --node_rank=1 \
-    --master_addr=10.124.2.202 \
-    --master_port=12133 \
+    --master_addr=10.136.133.40 \
+    --master_port=12134 \
     opensora/train/train_causalvae.py \
     --exp_name Mhunyuan \
     --eval_video_path /mnt/bn/occupancy3d/workspace/mzj/data/opensoraplan/video33/1 \
     --model_name hunyuan \
-    --resolution "(448,448)" \
+    --resolution "(384,384)" \
     --num_frames 9 \
     --batch_size 1 \
     --lr 0.00001 \
-    --epochs 100 \
+    --epochs 90 \
     --disc_start 0 \
     --save_ckpt_step 3000 \
     --eval_steps 2000 \
@@ -36,7 +36,8 @@ torchrun \
     --wavelet_weight 0.1 \
     --eval_num_video_log 4 \
     --pretrained_model_name_or_path /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan/baseline/hunyuan \
-    --mix_precision fp16 \
+    --mix_precision fp32 \
+    --test \
 
 
 # --model_config scripts/causalvae/wfvae_8dim.json \

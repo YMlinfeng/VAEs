@@ -230,6 +230,9 @@ def train(args):
     global_rank = dist.get_rank()
     logger = setup_logger(rank)
 
+    if global_rank == 0:
+        logger.warning(f"Training with args: {args}")
+
     # 创建检查点保存文件夹
     ckpt_dir = Path(args.ckpt_dir) / Path(get_exp_name(args))
     if global_rank == 0:
@@ -271,7 +274,7 @@ def train(args):
             del model_config['resolution']
         
         wandb.init(
-            mode="offline",
+            # mode="offline",
             project=os.environ.get("WANDB_PROJECT", "causalvideovae"),
             config=dict(**model_config, **args_config),
             name=get_exp_name(args),
@@ -315,7 +318,7 @@ def train(args):
     #     is_main_process=global_rank == 0,
     # )
     dataset = MultiViewSequenceDataset(
-        pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl",
+        pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl" if args.test else "/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_lf_sub.pkl",
         # pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_lf_sub.pkl",
         resolution=args.resolution,
         sequence_length=3
@@ -328,7 +331,7 @@ def train(args):
         pin_memory=True, # PyTorch 会将数据预加载到 CUDA 的锁页内存中
         num_workers=args.dataset_num_worker,
     )
-    print(f"[INFO] Training set loaded: {len(dataset)} videos.")
+    logging.info(f"[INFO] Training set loaded: {len(dataset)} videos.")
     # val_dataset = ValidVideoDataset(
     #     real_video_dir=args.eval_video_path,
     #     num_frames=args.eval_num_frames,
@@ -338,12 +341,10 @@ def train(args):
     # )
     val_dataset = MultiViewSequenceDataset(
         pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl",
-        # pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_lf_sub.pkl",
-        # resolution=512,
         resolution=args.resolution,
         sequence_length=3
     )
-    print(f"[INFO] Validation set loaded: {len(val_dataset)} videos.")
+    logging.info(f"[INFO] Validation set loaded: {len(val_dataset)} videos.")
     subset_size = min(args.eval_subset_size, len(val_dataset))
     indices = range(subset_size)
     val_dataset = Subset(val_dataset, indices=indices)
@@ -353,6 +354,7 @@ def train(args):
         batch_size=args.eval_batch_size,
         sampler=val_sampler,
         pin_memory=True,
+        num_workers=args.dataset_num_worker,
     )
     # 创建一个固定样本 Dataset（只取 index=0）
     fixed_val_sample = val_dataset[0]  # Subset 支持索引
@@ -367,11 +369,9 @@ def train(args):
             module.eval()
             module.requires_grad_(False)
         logger.warning("Encoder is freezed!")
-
     parameters_to_train = []
     for module in modules_to_train:
         parameters_to_train += list(filter(lambda p: p.requires_grad, module.parameters()))
-
     gen_optimizer = torch.optim.AdamW(parameters_to_train, lr=args.lr, weight_decay=1e-4)
     disc_optimizer = torch.optim.AdamW(
         filter(lambda p: p.requires_grad, disc.module.discriminator.parameters()), lr=args.lr, weight_decay=0.01
@@ -380,7 +380,6 @@ def train(args):
     # 确认总参数量和可训练参数量
     total = sum(p.numel() for p in model.module.parameters())
     trainable = sum(p.numel() for p in model.module.parameters() if p.requires_grad)
-
     logging.info(f"Total parameters: {total:,}")
     logging.info(f"Trainable parameters: {trainable:,}")
 
@@ -407,7 +406,7 @@ def train(args):
             "Before resume: %s",
             hash(tuple(p.data.cpu().numpy().tobytes() for p in model.parameters()))
         )
-        print(model.module.load_state_dict(checkpoint["state_dict"]["gen_model"], strict=False))
+        logging.warning(model.module.load_state_dict(checkpoint["state_dict"]["gen_model"], strict=False))
         # logging.info("After resume: %s", hash(tuple(p.data.cpu().numpy().flatten() for p in model.parameters())))
         logging.info(
             "After resume: %s",
@@ -453,7 +452,7 @@ def train(args):
         }, step=0)
 
     # Training Bar
-    bar_desc = ""
+    bar_desc = "epoch: {current_epoch}, g_loss: {loss}"
     bar = None
     if global_rank == 0:
         max_steps = (
@@ -462,7 +461,6 @@ def train(args):
         bar = tqdm.tqdm(total=max_steps, desc=bar_desc.format(current_epoch=0, loss=0)) # 把字符串 bar_desc 中的 {current_epoch} 和 {loss} 两个占位符，替换成 0 和 0，生成一个新的字符串
         # bar.update(current_step) #  这是 tqdm 的方法：update(n)
         safe_bar_update(bar)
-        bar_desc = "Epoch: {current_epoch}, Loss: {loss}"
         logger.warning("Training Details: ")
         logger.warning(f" Max steps: {max_steps}")
         logger.warning(f" Dataset Samples: {len(dataloader)}")
@@ -471,15 +469,14 @@ def train(args):
         )
     dist.barrier()
 
+    def update_bar(bar, current_epoch, loss_value):
+        if global_rank == 0:
+            bar.set_description(bar_desc.format(current_epoch=current_epoch, loss=f"{loss_value:.4f}"))
+            safe_bar_update(bar)
+    loss_value = torch.tensor(0.0, device=rank)
+
     # Training Loop
     num_epochs = args.epochs
-
-    def update_bar(bar):
-        if global_rank == 0:
-            bar.desc = bar_desc.format(current_epoch=epoch, loss=f"-")
-            safe_bar_update(bar)
-            # bar.update()
-
     for epoch in range(num_epochs):
         set_train(modules_to_train)
         ddp_sampler.set_epoch(epoch)  # Shuffle data at every epoch
@@ -525,6 +522,17 @@ def train(args):
                         wavelet_coeffs=wavelet_coeffs,
                         split="train",
                     )
+                # 累加所有 generator 的 loss
+                total_g_loss = g_loss  # 起始为 g_loss
+                # 如果 g_log 中有指定的 loss，就依次加上去
+                for key in ['train/rec_loss', 'train/sb_loss', 'train/wl_loss']:
+                    if key in g_log:
+                        total_g_loss = total_g_loss + g_log[key]
+                loss_value = g_loss
+                # print(f"g_loss: {g_loss}")
+                # print(f"total_g_loss: {total_g_loss}")
+                # print(f"loss_value: {loss_value}")
+                
                 gen_optimizer.zero_grad()
                 scaler.scale(g_loss).backward()
                 # scaler.unscale_(gen_optimizer)
@@ -614,7 +622,6 @@ def train(args):
                 if global_rank == 0:
                     logger.info("Starting validation...")
                 valid_model(model, name="", fixed_val_video=fixed_val_video)
-                # print("--------stop--------")
                 if args.ema:
                     ema.apply_shadow()
                     valid_model(model, name="ema", fixed_val_video=fixed_val_video)
@@ -641,7 +648,7 @@ def train(args):
                 )
                 logger.info(f"Checkpoint has been saved to `{file_path}`.")
 
-            update_bar(bar)
+            update_bar(bar, epoch, loss_value.item())
             current_step += 1
 
     dist.destroy_process_group()
@@ -724,6 +731,7 @@ def main():
 
     # Dataset
     parser.add_argument("--dataset_num_worker", type=int, default=64, help="")
+    parser.add_argument("--test", action="store_true", help="")
 
     # EMA
     parser.add_argument("--ema", action="store_true", help="")
