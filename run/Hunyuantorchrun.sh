@@ -29,8 +29,7 @@ export WANDB_MODE=offline
 
 echo "🚀 开始训练..."
 /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan/TORCHRUN opensora/train/train_causalvae.py \
-    --exp_name Hunyuan-t528-64GPU \
-    --eval_video_path /mnt/bn/occupancy3d/workspace/mzj/data/opensoraplan/video33/1 \
+    --exp_name Hunyuan-t610-64GPU \
     --model_name hunyuan \
     --resolution "(384,384)" \
     --num_frames 9 \
@@ -39,7 +38,7 @@ echo "🚀 开始训练..."
     --epochs 10 \
     --disc_start 0 \
     --save_ckpt_step 3000 \
-    --eval_steps 1000 \
+    --eval_steps 2000 \
     --eval_batch_size 1 \
     --eval_num_frames 9 \
     --eval_sample_rate 1 \

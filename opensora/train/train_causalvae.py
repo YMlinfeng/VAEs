@@ -318,13 +318,14 @@ def train(args):
     #     is_main_process=global_rank == 0,
     # )
     dataset = MultiViewSequenceDataset(
-        pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl" if args.test else "/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_lf_sub.pkl",
-        # pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_lf_sub.pkl",
+        # pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl" if args.test else "/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_lf_sub.pkl", #2M
+        pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl" if args.test else "/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/dcr_bottom_half.jsonl",  #17M
         resolution=args.resolution,
-        sequence_length=3
+        sequence_length=3,
+        tem_range=(5, 10),
     )
     ddp_sampler = CustomDistributedSampler(dataset)
-    dataloader = DataLoader(
+    dataloader = DataLoader( 
         dataset,
         batch_size=args.batch_size,
         sampler=ddp_sampler,
@@ -342,7 +343,8 @@ def train(args):
     val_dataset = MultiViewSequenceDataset(
         pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl",
         resolution=args.resolution,
-        sequence_length=3
+        sequence_length=3,
+        tem_range=(5, 5),
     )
     logging.info(f"[INFO] Validation set loaded: {len(val_dataset)} videos.")
     subset_size = min(args.eval_subset_size, len(val_dataset))

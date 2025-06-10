@@ -2,16 +2,15 @@ export WANDB_PROJECT=MZJVAE-8
 export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 # export WANDB_ENTITY="xiao102851"
 # export WANDB_API_KEY="f4416857501984f14835ded01a1fe0fbb6e7bcb7"
-
+export WANDB_MODE=offline
 
 torchrun \
     --nnodes=2 --nproc_per_node=8 \
     --node_rank=1 \
-    --master_addr=10.136.133.40 \
+    --master_addr=10.124.2.139 \
     --master_port=12134 \
     opensora/train/train_causalvae.py \
     --exp_name Mhunyuan \
-    --eval_video_path /mnt/bn/occupancy3d/workspace/mzj/data/opensoraplan/video33/1 \
     --model_name hunyuan \
     --resolution "(384,384)" \
     --num_frames 9 \
@@ -19,7 +18,7 @@ torchrun \
     --lr 0.00001 \
     --epochs 90 \
     --disc_start 0 \
-    --save_ckpt_step 3000 \
+    --save_ckpt_step 4000 \
     --eval_steps 2000 \
     --eval_batch_size 1 \
     --eval_num_frames 9 \
