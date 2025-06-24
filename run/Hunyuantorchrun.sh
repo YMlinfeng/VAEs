@@ -29,7 +29,7 @@ export WANDB_MODE=offline
 
 echo "🚀 开始训练..."
 /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan/TORCHRUN opensora/train/train_causalvae.py \
-    --exp_name Hunyuan-t610-64GPU \
+    --exp_name Hunyuan-t624-32GPU \
     --model_name hunyuan \
     --resolution "(384,384)" \
     --num_frames 9 \

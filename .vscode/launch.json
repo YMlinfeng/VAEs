@@ -117,23 +117,76 @@
 // }
 
 
+// {
+//     // 普通vscode无参数调试
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "Python: Current File",
+//             "type": "python",
+//             "request": "launch",
+//             "program": "${file}",
+//             "console": "integratedTerminal",
+//             "justMyCode": true
+//         }
+//     ]
+// }
+
+
+
 {
-    // 普通vscode无参数调试
+    // hunyuannuscences
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
+            "name": "Python: Train OpenSoraPlanVAE",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": true
+            "python": "/usr/bin/python3",
+            "program": "/usr/local/lib/python3.9/dist-packages/torch/distributed/launch.py",
+            "args": [
+                "--nnodes=1",
+                "--nproc-per-node=1",
+                "--master-addr=localhost",
+                "--master-port=12135",
+                "--use-env",
+                "opensora/train/train_causalvae.py",
+                "--exp_name", "delete",
+                "--model_name", "hunyuan",
+                // "--model_config", "scripts/causalvae/wfvae_8dim.json",
+                "--batch_size", "1",
+                "--lr", "0.00001",
+                "--epochs", "1",
+                "--disc_start", "0",
+                "--save_ckpt_step", "20",
+                "--eval_steps", "20",
+                "--eval_batch_size", "1",
+                "--eval_sample_rate", "1",
+                "--eval_subset_size", "40",
+                "--eval_lpips",
+                "--ema",
+                "--ema_decay", "0.999",
+                "--perceptual_weight", "1.0",
+                "--loss_type", "l1",
+                "--sample_rate", "1",
+                "--disc_cls", "opensora.models.causalvideovae.model.losses.LPIPSWithDiscriminator3D",
+                "--wavelet_loss",
+                "--wavelet_weight", "0.1",
+                "--eval_num_video_log", "4",
+                "--pretrained_model_name_or_path", "/mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan/baseline/hunyuan",
+                "--mix_precision", "fp32",
+                "--test",
+            ],
+            "env": {
+                "WANDB_MODE": "offline",  // 禁用 wandb 上传
+                "WANDB_PROJECT": "MZJVAE-DEBUG", // 不改动
+                "CUDA_VISIBLE_DEVICES": "0",
+                "PYDEVD_WARN_SLOW_RESOLVE_TIMEOUT": "1.25"
+            },
+            "console": "integratedTerminal"
         }
     ]
 }
-
-
-
 // {
 //     // hunyuan
 //     "version": "0.2.0",
@@ -146,7 +199,7 @@
 //             "program": "/usr/local/lib/python3.9/dist-packages/torch/distributed/launch.py",
 //             "args": [
 //                 "--nnodes=1",
-//                 "--nproc-per-node=1",
+//                 "--nproc-per-node=4",
 //                 "--master-addr=localhost",
 //                 "--master-port=12135",
 //                 "--use-env",

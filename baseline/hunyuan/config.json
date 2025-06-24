@@ -1,6 +1,5 @@
 {
   "_class_name": "AutoencoderKLHunyuanVideo",
-  "_diffusers_version": "0.4.2",
   "in_channels": 3,
   "out_channels": 3,
   "latent_channels": 16,

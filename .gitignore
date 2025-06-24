@@ -1,8 +1,21 @@
+wandb/
+wandb
+baseline
+baseline/
+.cache
+.cache/
+docker/
+docker
+TORCHRUN
+TORCHRUN*
+*.toml
+
 
 __pycache__
 *.mp4
 .ipynb_checkpoints
 *.pth
+*.pt
 UCF-101/
 results/
 build/
@@ -105,3 +118,4 @@ output/
 output
 results
 results/
+

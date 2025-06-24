@@ -26,6 +26,7 @@ from opensora.models.causalvideovae.model.ema_model import EMA
 from opensora.models.causalvideovae.dataset.ddp_sampler import CustomDistributedSampler
 from opensora.models.causalvideovae.dataset.video_dataset import TrainVideoDataset, ValidVideoDataset
 from opensora.models.causalvideovae.dataset.fakevideo_dataset import MultiViewSequenceDataset
+from opensora.models.causalvideovae.dataset.nuscenes_dataset import NuScenesMultiViewVideoDataset
 from opensora.models.causalvideovae.model.utils.module_utils import resolve_str_to_obj
 from opensora.models.causalvideovae.utils.video_utils import tensor_to_video
 
@@ -317,13 +318,20 @@ def train(args):
     #     cache_file="idx.pkl",
     #     is_main_process=global_rank == 0,
     # )
-    dataset = MultiViewSequenceDataset(
-        # pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl" if args.test else "/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_lf_sub.pkl", #2M
-        pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl" if args.test else "/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/dcr_bottom_half.jsonl",  #17M
-        resolution=args.resolution,
-        sequence_length=3,
-        tem_range=(5, 10),
+    # dataset = MultiViewSequenceDataset(
+    #     # pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl" if args.test else "/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_lf_sub.pkl", #2M
+    #     pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl" if args.test else "/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/dcr_bottom_half.jsonl",  #17M
+    #     resolution=args.resolution,
+    #     sequence_length=3,
+    #     tem_range=(5, 10),
+    # )
+    
+    dataset = NuScenesMultiViewVideoDataset(
+        ann_file = '/mnt/bn/occupancy3d/workspace/mzj/data/nuscenes_mmdet3d-12Hz/nuscenes_interp_12Hz_infos_train_with_bid.pkl', 
+        resolution=(224, 400), 
+        sequence_length=3
     )
+    
     ddp_sampler = CustomDistributedSampler(dataset)
     dataloader = DataLoader( 
         dataset,
@@ -340,11 +348,16 @@ def train(args):
     #     crop_size=args.eval_resolution,
     #     resolution=args.eval_resolution,
     # )
-    val_dataset = MultiViewSequenceDataset(
-        pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl",
-        resolution=args.resolution,
-        sequence_length=3,
-        tem_range=(5, 5),
+    # val_dataset = MultiViewSequenceDataset(
+    #     pkl_path="/mnt/bn/occupancy3d/workspace/lzy/robotics-data-sdk/data_infos/pkls/dcr_data_dynamic_bottom_scaleddepth.pkl",
+    #     resolution=args.resolution,
+    #     sequence_length=3,
+    #     tem_range=(5, 5),
+    # )
+    val_dataset = NuScenesMultiViewVideoDataset(
+        ann_file = '/mnt/bn/occupancy3d/workspace/mzj/data/nuscenes_mmdet3d-12Hz/nuscenes_interp_12Hz_infos_val_with_bid.pkl', 
+        resolution=(224, 400), 
+        sequence_length=3
     )
     logging.info(f"[INFO] Validation set loaded: {len(val_dataset)} videos.")
     subset_size = min(args.eval_subset_size, len(val_dataset))

@@ -11,8 +11,8 @@ from ..registry import ModelRegistry
 # 定义适配器类
 @ModelRegistry.register("hunyuan")
 class WrappedHunyuan(AutoencoderKLHunyuanVideo):
-#     def __init__(self, *args, **kwargs): # 透传参数，分别接受位置参数和关键字参数，不能用！！！！！！！
-#         super().__init__(*args, **kwargs)
+#     def __init__(self, *args, **kwargs): # 透传参数，分别接受位置参数和关键字参数，不能用！！！！！！！这个地方仍然有迷惑？？
+#         super().__init__(*args, **kwargs) # 迷惑？？？
 
     def get_encoder(self):
         modules = [self.encoder]
@@ -32,6 +32,20 @@ class WrappedHunyuan(AutoencoderKLHunyuanVideo):
         else:
             return self.decoder.conv_out.weight
     
+    # def forward(
+    #     self,
+    #     sample: torch.Tensor,
+    #     generator: Optional[torch.Generator] = None,
+    # ) -> Union[torch.Tensor, torch.Tensor]:
+    #     x = sample
+    #     posterior = self.encode(x).latent_dist
+    #     if self.sample_posterior:
+    #         z = posterior.sample(generator=generator)
+    #     else:
+    #         z = posterior.mode()
+    #     dec = self.decode(z).sample
+    #     return dec, posterior, None # 如果将来训练代码需要 wavelet loss
+
     def forward(
         self,
         sample: torch.Tensor,
@@ -40,12 +54,15 @@ class WrappedHunyuan(AutoencoderKLHunyuanVideo):
     ) -> Union[torch.Tensor, torch.Tensor]:
         x = sample
         posterior = self.encode(x).latent_dist
+
         if sample_posterior:
             z = posterior.sample(generator=generator)
         else:
             z = posterior.mode()
+
         dec = self.decode(z).sample
-        return dec, posterior, None # 如果将来训练代码需要 wavelet loss
+
+        return dec, posterior, None  # 如果将来训练代码需要 wavelet loss
 
 # 手动注册别名
 # ModelRegistry.register("Cog3DVAE")(WrappedCog3DVAE)
