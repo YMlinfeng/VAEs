@@ -232,7 +232,7 @@ For more details, please refer to the [Contribution Guidelines](docs/Contributio
 
 ## VAE
 
-Finetune VAEs代码实现
+Finetune VAEs
 
 hunyuan VAE， cogVAE
 
