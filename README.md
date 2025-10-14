@@ -235,4 +235,5 @@ For more details, please refer to the [Contribution Guidelines](docs/Contributio
 Finetune VAEs
 
 hunyuan VAE， cogVAE
+RAE
 
