@@ -234,6 +234,9 @@ For more details, please refer to the [Contribution Guidelines](docs/Contributio
 
 Finetune VAEs
 
-hunyuan VAE， cogVAE
-RAE(Saining Xie)
+hunyuan VAE， cogVAE <br>
+- [ ] RAE(Saining Xie)
+
+
+
 
