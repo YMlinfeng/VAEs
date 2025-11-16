@@ -232,7 +232,7 @@ For more details, please refer to the [Contribution Guidelines](docs/Contributio
 
 ## VAE
 
-Finetune VAEs
+Finetune all kinds of VAEs
 
 hunyuan VAE， cogVAE <br>
 - [ ] RAE(Saining Xie)
