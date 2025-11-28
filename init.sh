@@ -20,6 +20,6 @@ cd /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan
 mkdir -p ~/.cache/torch/hub/checkpoints/
 cp ./alexnet-owt-7be5be79.pth ~/.cache/torch/hub/checkpoints/
 cp ./vgg16-397923af.pth ~/.cache/torch/hub/checkpoints/
-echo "all is ok!"
+# echo "all is ok!"
 
 
