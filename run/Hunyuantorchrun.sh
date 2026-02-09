@@ -27,7 +27,7 @@ cp ./vgg16-397923af.pth ~/.cache/torch/hub/checkpoints/
 export WANDB_PROJECT="MZJVAE-TRAIN"
 export WANDB_MODE=offline
 
-echo "🚀 开始训练..."
+echo " 开始训练..."
 /mnt/bn/occupancy3d/workspace/mzj/Open-Sora-Plan/TORCHRUN opensora/train/train_causalvae.py \
     --exp_name Hunyuan-t624-32GPU \
     --model_name hunyuan \
