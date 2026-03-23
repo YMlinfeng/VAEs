@@ -236,7 +236,7 @@ Finetune all kinds of VAEs
 
 hunyuan VAE， cogVAE <br>
 - [ ] RAE(Saining Xie)
-
+- [ ] TTT
 
 
 
